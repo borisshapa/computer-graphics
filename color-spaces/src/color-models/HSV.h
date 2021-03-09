@@ -7,11 +7,12 @@
 
 
 #include "ColorModel.h"
+#include "CylindricalColorModel.h"
 
-struct HSV : ColorModel {
+struct HSV : CylindricalColorModel {
     HSV(uint8_t h, uint8_t s, uint8_t v);
 
-    RGB ToRGB() override;
+    RGB ToRGB() const override;
 
     uint8_t H() const;
 

@@ -9,10 +9,10 @@
 #include <cstdint>
 #include "ColorModel.h"
 
-class CMY : ColorModel {
+struct CMY : ColorModel {
     CMY(uint8_t c, uint8_t m, uint8_t y);
 
-    RGB ToRGB() override;
+    RGB ToRGB() const override;
 
     uint8_t C() const;
 

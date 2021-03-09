@@ -6,6 +6,6 @@
 
 RGB::RGB(uint8_t r, uint8_t g, uint8_t b) : ColorModel{r, g, b} {}
 
-RGB RGB::ToRGB() {
+RGB RGB::ToRGB() const {
     return *this;
 }

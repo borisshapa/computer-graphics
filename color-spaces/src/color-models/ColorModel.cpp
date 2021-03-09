@@ -5,7 +5,8 @@
 #include <cstddef>
 #include "ColorModel.h"
 
-ColorModel::ColorModel(std::initializer_list<uint8_t> channels_values) : channels_count_(channels_values.size()) {
+ColorModel::ColorModel(const std::initializer_list<uint8_t> &channels_values) : channels_count_(
+        channels_values.size()) {
     channel_values_ = new uint8_t[channels_count_];
     size_t ind = 0;
     for (auto &channel_value : channels_values) {
@@ -25,3 +26,5 @@ uint8_t ColorModel::GetChannelsCount() const {
 const uint8_t *ColorModel::GetChannelValues() const {
     return channel_values_;
 }
+
+ColorModel::ColorModel() : channels_count_(0), channel_values_(nullptr) {}

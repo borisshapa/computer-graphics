@@ -6,11 +6,12 @@
 #define COLOR_SPACES_HSL_H
 
 #include "ColorModel.h"
+#include "CylindricalColorModel.h"
 
-struct HSL : ColorModel {
+struct HSL : CylindricalColorModel {
     HSL(uint8_t h, uint8_t s, uint8_t l);
 
-    RGB ToRGB() override;
+    RGB ToRGB() const override;
 
     uint8_t H() const;
 

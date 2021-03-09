@@ -8,14 +8,17 @@
 
 #include <cstdint>
 #include <initializer_list>
-#include "RGB.h"
+
+struct RGB;
 
 struct ColorModel {
-    ColorModel(std::initializer_list<uint8_t> channels_values);
+    ColorModel();
 
-    ~ColorModel();
+    ColorModel(const std::initializer_list<uint8_t>& channels_values);
 
-    virtual RGB ToRGB() = 0;
+    virtual ~ColorModel();
+
+    virtual RGB ToRGB() const = 0;
 
     uint8_t GetChannelsCount() const;
 

@@ -6,7 +6,7 @@
 
 CMY::CMY(uint8_t c, uint8_t m, uint8_t y) : ColorModel{c, m, y} {}
 
-RGB CMY::ToRGB() {
+RGB CMY::ToRGB() const {
     return RGB(255 - C(), 255 - M(), 255 - Y());
 }
 

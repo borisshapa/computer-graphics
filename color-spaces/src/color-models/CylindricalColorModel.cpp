@@ -3,7 +3,10 @@
 //
 
 #include <cassert>
+#include <stdexcept>
+#include <cmath>
 #include "CylindricalColorModel.h"
+#include "RGB.h"
 
 double FindOutValue(uint8_t sector, const double rgb_max, const double rgb_min, const double inc_val,
                     const double dec_val) {
@@ -22,7 +25,7 @@ double FindOutValue(uint8_t sector, const double rgb_max, const double rgb_min, 
         case 5:
             return rgb_max;
         default:
-            assert("The maximum value is 5");
+            throw std::runtime_error("The maximum value is 5");
     }
 }
 
@@ -41,9 +44,9 @@ RGB CylindricalColorModel::ToRGB(const double hue, const double rgb_min_value, c
                                       color_decreasing_value);
     const double blue = FindOutValue((sector + 2) % 6, rgb_max_value, rgb_min_value, color_increasing_value,
                                      color_decreasing_value);
-    return RGB(static_cast<uint8_t>(red * 255),
-               static_cast<uint8_t>(green * 255),
-               static_cast<uint8_t>(blue * 255));
+    return RGB(static_cast<uint8_t>(std::round(red * 255)),
+               static_cast<uint8_t>(std::round(green * 255)),
+               static_cast<uint8_t>(std::round(blue * 255)));
 }
 
 CylindricalColorModel::CylindricalColorModel(uint8_t h, uint8_t s, uint8_t x) : ColorModel{h, s, x} {}

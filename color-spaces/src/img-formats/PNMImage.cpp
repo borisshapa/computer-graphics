@@ -3,6 +3,7 @@
 //
 
 #include <fstream>
+#include <iostream>
 #include "PNMImage.h"
 
 void CheckStream(const std::ios &stream, const std::string &message) {
@@ -48,7 +49,7 @@ namespace pnm {
         in.close();
         CheckStreamAfterClosing(in);
 
-        return Image(width, height, channels_count, max_channel_value, data);
+        return Image(width, height, channels_count, max_channel_value, reinterpret_cast<uint8_t *>(data));
     }
 
     void write(const Image &image, const std::string &file_name) {
@@ -71,7 +72,7 @@ namespace pnm {
         out << width << ' ' << height << '\n';
         out << image.GetMaxChannelValue() << '\n';
 
-        out.write(image.GetData(), width * height * channels_count);
+        out.write(reinterpret_cast<const char *>(image.GetData()), width * height * channels_count);
         out.close();
         CheckStreamAfterClosing(out);
     }

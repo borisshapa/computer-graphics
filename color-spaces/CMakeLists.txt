@@ -18,8 +18,8 @@ add_executable(color_spaces
         src/color-models/HSV.h
         src/color-models/RGB.cpp
         src/color-models/RGB.h
-        src/color-models/RGBColorSpaceTransformation.cpp
-        src/color-models/RGBColorSpaceTransformation.h
+        src/color-models/YCbCr.cpp
+        src/color-models/YCbCr.h
         src/color-models/YCbCr601.cpp
         src/color-models/YCbCr601.h
         src/color-models/YCbCr709.cpp

@@ -2,7 +2,9 @@
 // Created by borisshapa on 07.03.2021.
 //
 
+#include <iostream>
 #include "CMY.h"
+#include "RGB.h"
 
 CMY::CMY(uint8_t c, uint8_t m, uint8_t y) : ColorModel{c, m, y} {}
 

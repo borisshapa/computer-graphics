@@ -2,8 +2,8 @@
 // Created by borisshapa on 07.03.2021.
 //
 
-#include <cassert>
 #include "HSV.h"
+#include "RGB.h"
 
 HSV::HSV(uint8_t h, uint8_t s, uint8_t v) : CylindricalColorModel(h, s, v) {}
 

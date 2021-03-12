@@ -6,9 +6,9 @@
 #define COLOR_SPACES_YCOCG_H
 
 
-#include "RGBColorSpaceTransformation.h"
+#include "ColorModel.h"
 
-struct YCoCg : RGBColorSpaceTransformation {
+struct YCoCg : ColorModel {
     YCoCg(uint8_t y, uint8_t co, uint8_t cg);
 
     uint8_t Y() const;
@@ -17,8 +17,7 @@ struct YCoCg : RGBColorSpaceTransformation {
 
     uint8_t Cg() const;
 
-private:
-    std::array<std::array<double, 4>, 3> GetTransformationMatrix() const override;
+    RGB ToRGB() const override;
 };
 
 

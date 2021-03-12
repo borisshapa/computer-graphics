@@ -11,7 +11,7 @@
 struct Image {
     Image() = default;
 
-    Image(size_t width, size_t height, uint8_t channels_count, size_t max_channel_value, char *data);
+    Image(size_t width, size_t height, uint8_t channels_count, size_t max_channel_value, uint8_t *data);
 
     Image(const Image &img);
 
@@ -27,7 +27,7 @@ struct Image {
 
     size_t GetMaxChannelValue() const;
 
-    const char *GetData() const;
+    const uint8_t *GetData() const;
 
     size_t GetRowSize() const;
 
@@ -50,7 +50,7 @@ private:
     size_t height_ = 0;
     uint8_t channels_count_ = 1;
     size_t max_channel_value_ = 0;
-    char *data_ = nullptr;
+    uint8_t *data_ = nullptr;
 };
 
 #endif //SIMPLE_TRANSFORMATIONS_IMAGE_H

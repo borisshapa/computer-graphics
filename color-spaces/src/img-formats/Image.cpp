@@ -5,7 +5,7 @@
 #include <cstring>
 #include "Image.h"
 
-Image::Image(size_t width, size_t height, uint8_t channels_count, size_t max_channel_value, char *data)
+Image::Image(size_t width, size_t height, uint8_t channels_count, size_t max_channel_value, uint8_t *data)
         : width_(width),
           height_(height),
           channels_count_(channels_count),
@@ -19,7 +19,7 @@ Image::Image(const Image &img)
           channels_count_(img.channels_count_),
           max_channel_value_(img.max_channel_value_) {
     size_t bytes_count = img.GetBytesCount();
-    data_ = new char[bytes_count];
+    data_ = new uint8_t[bytes_count];
     std::memcpy(data_, img.data_, bytes_count);
 }
 
@@ -58,7 +58,7 @@ size_t Image::GetMaxChannelValue() const {
     return max_channel_value_;
 }
 
-const char *Image::GetData() const {
+const uint8_t *Image::GetData() const {
     return data_;
 }
 
@@ -73,8 +73,8 @@ size_t Image::GetBytesCount() const {
 Image Image::FlipVertically() const {
     const size_t row_size = GetRowSize();
 
-    char *new_data = new char[GetBytesCount()];
-    char *new_data_last = new_data + GetBytesCount() - row_size;
+    auto *new_data = new uint8_t[GetBytesCount()];
+    uint8_t *new_data_last = new_data + GetBytesCount() - row_size;
     for (size_t i = 0; i < height_; i++) {
         std::memcpy(new_data_last - i * row_size, data_ + i * row_size, row_size);
     }
@@ -85,9 +85,9 @@ Image Image::FlipVertically() const {
 Image Image::FlipHorizontally() const {
     const size_t row_size = GetRowSize();
 
-    char *new_data = new char[GetBytesCount()];
+    auto *new_data = new uint8_t[GetBytesCount()];
     for (size_t row = 0; row < height_; row++) {
-        char *new_data_row_last = new_data + (row + 1) * row_size - channels_count_;
+        uint8_t *new_data_row_last = new_data + (row + 1) * row_size - channels_count_;
         for (size_t pixel = 0; pixel < width_; pixel++) {
             const size_t shift_bytes = pixel * channels_count_;
             std::memcpy(
@@ -116,7 +116,7 @@ Image Image::Rotate90Left() const {
 Image Image::Rotate(const std::function<size_t(size_t, size_t)> &new_coordinates) const {
     const size_t row_size = GetRowSize();
 
-    char *new_data = new char[GetBytesCount()];
+    auto *new_data = new uint8_t[GetBytesCount()];
     for (size_t row = 0; row < height_; row++) {
         for (size_t col = 0; col < width_; col++) {
             std::memcpy(
@@ -132,9 +132,9 @@ Image Image::Rotate(const std::function<size_t(size_t, size_t)> &new_coordinates
 
 Image Image::Invert() const {
     const size_t bytes_count = GetBytesCount();
-    char *new_data = new char[bytes_count];
+    auto *new_data = new uint8_t[bytes_count];
     for (size_t i = 0; i < bytes_count; i++) {
-        new_data[i] = static_cast<char>(max_channel_value_ - data_[i]);
+        new_data[i] = static_cast<uint8_t>(max_channel_value_ - data_[i]);
     }
     return Image(width_, height_, channels_count_, max_channel_value_, new_data);
 }

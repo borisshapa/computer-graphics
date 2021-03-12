@@ -5,20 +5,17 @@
 #ifndef COLOR_SPACES_YCBCR709_H
 #define COLOR_SPACES_YCBCR709_H
 
+#include "YCbCr.h"
 
-#include "RGBColorSpaceTransformation.h"
-
-struct YCbCr709 : RGBColorSpaceTransformation {
+struct YCbCr709 : YCbCr {
     YCbCr709(uint8_t y, uint8_t cb, uint8_t cr);
 
-    uint8_t Y() const;
+    double GetKb() const override;
 
-    uint8_t Cb() const;
+    double GetKr() const override;
 
-    uint8_t Cr() const;
-
-private:
-    std::array<std::array<double, 4>, 3> GetTransformationMatrix() const override;
+    static const double KB;
+    static const double KR;
 };
 
 

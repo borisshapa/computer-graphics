@@ -2,9 +2,9 @@
 // Created by borisshapa on 07.03.2021.
 //
 
-#include <cstdlib>
 #include "ColorModel.h"
 #include "HSL.h"
+#include "RGB.h"
 
 RGB HSL::ToRGB() const {
     const double hue = (static_cast<double>(H()) / 255) * 360;

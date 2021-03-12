@@ -5,13 +5,14 @@
 #include <cstddef>
 #include <iostream>
 #include <functional>
-#include <HSV.h>
-#include <YCbCr601.h>
-#include <YCbCr709.h>
-#include <YCoCg.h>
-#include <CMY.h>
-#include <HSL.h>
-#include <RGB.h>
+#include <cstring>
+#include "color-models/HSV.h"
+#include "color-models/YCbCr601.h"
+#include "color-models/YCbCr709.h"
+#include "color-models/YCoCg.h"
+#include "color-models/CMY.h"
+#include "color-models/HSL.h"
+#include "color-models/RGB.h"
 #include "img-formats/Image.h"
 #include "UtilityConstants.h"
 #include "img-formats/PNMImage.h"
@@ -31,7 +32,7 @@ void ConvertPixel(uint8_t *pixel, const std::string &from, const std::string &to
     uint8_t b1 = pixel[0];
     uint8_t b2 = pixel[1];
     uint8_t b3 = pixel[2];
-    ColorModel *cm_pixel = nullptr;
+    ColorModel *cm_pixel;
     if (from == RGB_MODEL_NAME) {
         cm_pixel = new RGB(b1, b2, b3);
     } else if (from == HSL_MODEL_NAME) {
@@ -53,7 +54,9 @@ void ConvertPixel(uint8_t *pixel, const std::string &from, const std::string &to
     const RGB rgb = cm_pixel->ToRGB();
     // TODO: different types of output color space
 
-    const uint8_t *bytes = rgb.ToRGB().GetChannelValues();
+    RGB output_color_model = rgb.ToRGB();
+    const uint8_t *bytes = output_color_model.GetChannelValues();
+
     std::copy(bytes, bytes + 3, pixel);
 }
 
@@ -101,7 +104,7 @@ Image GetInputImage(const long int input_files_count, const std::string &input_f
             throw std::runtime_error("Expected that 3 files have the same height");
         }
 
-        char *combined_data = new char[input_image_1.GetBytesCount() * 3];
+        auto *combined_data = new uint8_t[input_image_1.GetBytesCount() * 3];
         for (size_t i = 0; i < input_image_1.GetBytesCount(); i++) {
             const size_t cd_index = 3 * i;
             combined_data[cd_index] = input_image_1.GetData()[i];
@@ -116,20 +119,19 @@ Image GetInputImage(const long int input_files_count, const std::string &input_f
 
 void WriteConvertedData(const long int output_files_count, const std::string &output_file_name, const size_t width,
                         const size_t height, uint8_t *data) {
-    char *char_data = reinterpret_cast<char *>(data);
     if (output_files_count == 1) {
-        Image output_image = Image(width, height, 3, 255, char_data);
+        Image output_image = Image(width, height, 3, 255, data);
         pnm::write(output_image, output_file_name);
     } else {
         const size_t bytes_count = width * height;
-        char *output_image_data[3];
+        uint8_t *output_image_data[3];
 
         for (auto &channel : output_image_data) {
-            channel = new char[bytes_count];
+            channel = new uint8_t[bytes_count];
         }
         for (size_t i = 0; i < 3; i++) {
             for (size_t j = 0; j < bytes_count; j++) {
-                output_image_data[i][j] = char_data[3 * j + i];
+                output_image_data[i][j] = data[3 * j + i];
             }
         }
 
@@ -146,71 +148,83 @@ int main(int argc, char *argv[]) {
     std::string initial_color_space, final_color_space, input_file_name, output_file_name;
     long int input_files_count = -1, output_file_count = -1;
 
-    for (size_t i = 0; i < argc; i++) {
-        if (argv[i] == INITIAL_COLOR_SPACE_FLAG) {
-            if (!initial_color_space.empty()) {
-                throw std::runtime_error(REUSING_FLAGS_ERROR_MESSAGE);
-            }
-            if (i + 1 >= argc) {
+    try {
+        auto argc_size_t = static_cast<size_t>(argc);
+        for (size_t i = 1; i < argc_size_t; i++) {
+            if (strcmp(argv[i], INITIAL_COLOR_SPACE_FLAG) == 0) {
+                if (!initial_color_space.empty()) {
+                    throw std::runtime_error(REUSING_FLAGS_ERROR_MESSAGE);
+                }
+                if (i + 1 >= argc_size_t) {
+                    throw std::runtime_error(INPUT_FORMAT);
+                }
+                initial_color_space = argv[i + 1];
+                i++;
+            } else if (strcmp(argv[i], FINAL_COLOR_SPACE_FLAG) == 0) {
+                if (!final_color_space.empty()) {
+                    throw std::runtime_error(REUSING_FLAGS_ERROR_MESSAGE);
+                }
+                if (i + 1 >= argc_size_t) {
+                    throw std::runtime_error(INPUT_FORMAT);
+                }
+                final_color_space = argv[i + 1];
+                i++;
+            } else if (strcmp(argv[i], INPUT_FILES_FLAG) == 0) {
+                if (input_files_count != -1) {
+                    throw std::runtime_error(REUSING_FLAGS_ERROR_MESSAGE);
+                }
+                if (i + 2 >= argc_size_t) {
+                    throw std::runtime_error(INPUT_FORMAT);
+                }
+                input_files_count = StrToInt(argv[i + 1]);
+                input_file_name = argv[i + 2];
+                i += 2;
+            } else if (strcmp(argv[i], OUTPUT_FILES_FLAG) == 0) {
+                if (output_file_count != -1) {
+                    throw std::runtime_error(REUSING_FLAGS_ERROR_MESSAGE);
+                }
+                if (i + 2 >= argc_size_t) {
+                    throw std::runtime_error(INPUT_FORMAT);
+                }
+                output_file_count = StrToInt(argv[i + 1]);
+                output_file_name = argv[i + 2];
+                i += 2;
+            } else {
                 throw std::runtime_error(INPUT_FORMAT);
             }
-            initial_color_space = argv[i + 1];
-            i++;
-        } else if (argv[i] == FINAL_COLOR_SPACE_FLAG) {
-            if (!final_color_space.empty()) {
-                throw std::runtime_error(REUSING_FLAGS_ERROR_MESSAGE);
-            }
-            if (i + 1 >= argc) {
-                throw std::runtime_error(INPUT_FORMAT);
-            }
-            final_color_space = argv[i + 1];
-            i++;
-        } else if (argv[i] == INPUT_FILES_FLAG) {
-            if (input_files_count != -1) {
-                throw std::runtime_error(REUSING_FLAGS_ERROR_MESSAGE);
-            }
-            if (i + 2 >= argc) {
-                throw std::runtime_error(INPUT_FORMAT);
-            }
-            input_files_count = StrToInt(argv[i + 1]);
-            input_file_name = argv[i + 2];
-            i += 2;
-        } else if (argv[i] == OUTPUT_FILES_FLAG) {
-            if (output_file_count != -1) {
-                throw std::runtime_error(REUSING_FLAGS_ERROR_MESSAGE);
-            }
-            if (i + 2 >= argc) {
-                throw std::runtime_error(INPUT_FORMAT);
-            }
-            output_file_count = StrToInt(argv[i + 1]);
-            output_file_name = argv[i + 2];
-            i += 2;
         }
-    }
 
-    if (initial_color_space.empty()) {
-        initial_color_space = RGB_MODEL_NAME;
-    }
-    if (final_color_space.empty()) {
-        final_color_space = RGB_MODEL_NAME;
-    }
+        if (initial_color_space.empty()) {
+            initial_color_space = RGB_MODEL_NAME;
+        }
+        if (final_color_space.empty()) {
+            final_color_space = RGB_MODEL_NAME;
+        }
 
-    if (input_files_count != 1 && input_files_count != 3) {
-        throw std::runtime_error(FILES_FORMAT);
-    }
-    if (output_file_count != 1 && output_file_count != 3) {
-        throw std::runtime_error(FILES_FORMAT);
-    }
+        if (input_files_count != 1 && input_files_count != 3) {
+            throw std::runtime_error(FILES_FORMAT);
+        }
+        if (output_file_count != 1 && output_file_count != 3) {
+            throw std::runtime_error(FILES_FORMAT);
+        }
 
-    Image input_image = GetInputImage(input_files_count, input_file_name);
+        Image input_image = GetInputImage(input_files_count, input_file_name);
 
-    const size_t bytes_count = input_image.GetBytesCount();
-    auto *converted_data = new uint8_t[bytes_count];
-    std::copy(input_image.GetData(), input_image.GetData() + bytes_count, converted_data);
-    for (size_t i = 0; i < bytes_count; i += 3) {
-        ConvertPixel(converted_data + i, initial_color_space, final_color_space); // change converted data
+        const size_t bytes_count = input_image.GetBytesCount();
+        auto *converted_data = new uint8_t[bytes_count];
+        std::copy(input_image.GetData(), input_image.GetData() + bytes_count, converted_data);
+        for (size_t i = 0; i < bytes_count; i += 3) {
+            ConvertPixel(converted_data + i, initial_color_space, final_color_space); // change converted data
+        }
+
+        WriteConvertedData(output_file_count, output_file_name, input_image.GetWidth(), input_image.GetHeight(),
+                           converted_data);
+    } catch (const std::bad_alloc &e) {
+        std::cerr << "Allocation failed: " << e.what() << '\n';
+        return 1;
+    } catch (const std::exception &e) {
+        std::cerr << e.what() << '\n';
+        return 1;
     }
-
-    WriteConvertedData(output_file_count, output_file_name, input_image.GetWidth(), input_image.GetHeight(),
-                       converted_data);
+    return 0;
 }

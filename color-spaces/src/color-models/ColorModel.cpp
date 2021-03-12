@@ -66,5 +66,14 @@ uint8_t ColorModel::ClampDouble(double value) {
 
 std::array<double, 3>
 ColorModel::Transform(std::array<std::array<double, 3>, 3> transformation_matrix, std::array<double, 3> vec) {
-    return std::array<double, 3>();
+    std::array<double, 3> res{};
+
+    for (size_t i = 0; i < res.size(); i++) {
+        res[i] = 0;
+        for (size_t j = 0; j < vec.size(); j++) {
+            res[i] += transformation_matrix[i][j] * vec[j];
+        }
+    }
+
+    return res;
 }

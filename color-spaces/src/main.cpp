@@ -28,6 +28,10 @@ long int StrToInt(const std::string &input) {
     return transformation;
 }
 
+void CopyByte(const uint8_t *from, uint8_t *to) {
+    std::copy(from, from + 3, to);
+}
+
 void ConvertPixel(uint8_t *pixel, const std::string &from, const std::string &to) {
     uint8_t b1 = pixel[0];
     uint8_t b2 = pixel[1];
@@ -48,16 +52,28 @@ void ConvertPixel(uint8_t *pixel, const std::string &from, const std::string &to
     } else if (from == CMY_MODEL_NAME) {
         cm_pixel = new CMY(b1, b2, b3);
     } else {
-        throw std::runtime_error("Unsupported color model");
+        throw std::runtime_error("<from> is unsupported color model");
     }
 
     const RGB rgb = cm_pixel->ToRGB();
-    // TODO: different types of output color space
 
-    RGB output_color_model = rgb.ToRGB();
-    const uint8_t *bytes = output_color_model.GetChannelValues();
-
-    std::copy(bytes, bytes + 3, pixel);
+    if (to == RGB_MODEL_NAME) {
+        CopyByte(rgb.ToRGB().GetChannelValues(), pixel);
+    } else if (to == HSL_MODEL_NAME) {
+        CopyByte(rgb.ToHSL().GetChannelValues(), pixel);
+    } else if (to == HSV_MODEL_NAME) {
+        CopyByte(rgb.ToHSV().GetChannelValues(), pixel);
+    } else if (to == YCBCR601_MODEL_NAME) {
+        CopyByte(rgb.ToYCbCr601().GetChannelValues(), pixel);
+    } else if (to == YCBCR709_MODEL_NAME) {
+        CopyByte(rgb.ToYCbCr709().GetChannelValues(), pixel);
+    } else if (to == YCOCG_MODEL_NAME) {
+        CopyByte(rgb.ToYCoCg().GetChannelValues(), pixel);
+    } else if (to == CMY_MODEL_NAME) {
+        CopyByte(rgb.ToCMY().GetChannelValues(), pixel);
+    } else {
+        throw std::runtime_error("<to> is unsupported color model");
+    }
 }
 
 std::pair<std::string, std::string> SplitIntoNameAndExtension(const std::string &file_name) {

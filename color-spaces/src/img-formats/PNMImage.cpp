@@ -4,6 +4,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <cstring>
 #include "PNMImage.h"
 
 void CheckStream(const std::ios &stream, const std::string &message) {
@@ -49,7 +50,8 @@ namespace pnm {
         in.close();
         CheckStreamAfterClosing(in);
 
-        return Image(width, height, channels_count, max_channel_value, reinterpret_cast<uint8_t *>(data));
+        Image image = Image(width, height, channels_count, max_channel_value, reinterpret_cast<uint8_t *>(data));
+        return image;
     }
 
     void write(const Image &image, const std::string &file_name) {

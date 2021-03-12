@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <tuple>
+#include <cmath>
 #include "RGB.h"
 
 RGB::RGB(uint8_t r, uint8_t g, uint8_t b) : ColorModel{r, g, b} {}
@@ -17,11 +18,11 @@ uint8_t RGB::R() const {
 }
 
 uint8_t RGB::G() const {
-    return GetChannelValues()[2];
+    return GetChannelValues()[1];
 }
 
 uint8_t RGB::B() const {
-    return GetChannelValues()[3];
+    return GetChannelValues()[2];
 }
 
 CMY RGB::ToCMY() const {
@@ -39,7 +40,7 @@ std::tuple<double, double, double> GetHMaxMin(uint8_t red, uint8_t green, uint8_
     if (range == 0) {
         h = 0.0;
     } else if (max == r) {
-        h = 60 * ((g - b) / range);
+        h = 60 * (std::fmod((g - b) / range, 6));
     } else if (max == g) {
         h = 60 * (2 + ((b - r) / range));
     } else {
@@ -57,7 +58,9 @@ HSL RGB::ToHSL() const {
     double range = max - min;
     const double l = (max + min) / 2;
     const double s = range == 0 ? 0.0 : range / (1 - std::abs(2 * l - 1));
-    return HSL(h, s, l);
+    return HSL(GetByteValueByZeroOneRangeValue(h / 360.0),
+               GetByteValueByZeroOneRangeValue(s),
+               GetByteValueByZeroOneRangeValue(l));
 }
 
 HSV RGB::ToHSV() const {
@@ -65,7 +68,9 @@ HSV RGB::ToHSV() const {
     std::tie(h, max, min) = GetHMaxMin(R(), G(), B());
     const double s = (max == 0) ? 0.0 : (max - min) / max;
     const double v = max;
-    return HSV(h, s, v);
+    return HSV(GetByteValueByZeroOneRangeValue(h / 360.0),
+               GetByteValueByZeroOneRangeValue(s),
+               GetByteValueByZeroOneRangeValue(v));
 
 }
 

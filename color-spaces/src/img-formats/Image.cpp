@@ -2,7 +2,7 @@
 // Created by borisshapa on 21.02.2021.
 //
 
-#include vim <cstring>
+#include <cstring>
 #include "Image.h"
 
 Image::Image(size_t width, size_t height, uint8_t channels_count, size_t max_channel_value, uint8_t *data)

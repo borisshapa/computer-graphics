@@ -56,6 +56,7 @@ void ConvertPixel(uint8_t *pixel, const std::string &from, const std::string &to
     }
 
     const RGB rgb = cm_pixel->ToRGB();
+    delete cm_pixel;
 
     if (to == RGB_MODEL_NAME) {
         CopyByte(rgb.ToRGB().GetChannelValues(), pixel);
@@ -77,7 +78,7 @@ void ConvertPixel(uint8_t *pixel, const std::string &from, const std::string &to
 }
 
 std::pair<std::string, std::string> SplitIntoNameAndExtension(const std::string &file_name) {
-    const size_t dot_index = file_name.find('.');
+    const size_t dot_index = file_name.find_last_of('.');
     const std::string name = file_name.substr(0, dot_index);
     const std::string extension = file_name.substr(dot_index);
 

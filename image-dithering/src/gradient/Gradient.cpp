@@ -11,7 +11,7 @@ uint8_t Gradient::KeepHighBits(uint8_t number, uint8_t bitness) {
 }
 
 uint8_t Gradient::DuplicateHighBits(uint8_t number, uint8_t bitness) {
-    uint8_t high_bits = KeepHighBits(number, bitness);
+    const uint8_t high_bits = KeepHighBits(number, bitness);
     double duplicated_high_bits = high_bits / (1 - (1.0 / (1 << bitness)));
     duplicated_high_bits = std::min(duplicated_high_bits, 255.0);
     return static_cast<uint8_t>(duplicated_high_bits);
@@ -37,11 +37,16 @@ std::pair<uint8_t, uint8_t> Gradient::GetLowerUpperBounds(double grey_value, uin
     if (grey_value >= 255.0) {
         return {255, 255};
     }
-    uint8_t step = (1 << (8 - bitness));
-    double upper_bound_double = grey_value + step;
-    uint8_t upper_bound = (upper_bound_double >= 255.0)
-                          ? 255
-                          : DuplicateHighBits(static_cast<uint8_t>(upper_bound_double), bitness);
-    uint8_t lower_bound = DuplicateHighBits(upper_bound - step, bitness);
+    const uint8_t step = (1 << (8 - bitness));
+
+    uint8_t lower_bound, upper_bound;
+    uint8_t duplicated_high_bits = DuplicateHighBits(static_cast<uint8_t>(grey_value), bitness);
+    if (grey_value >= duplicated_high_bits) {
+        lower_bound = duplicated_high_bits;
+        upper_bound = DuplicateHighBits(lower_bound + step, bitness);
+    } else {
+        upper_bound = duplicated_high_bits;
+        lower_bound = DuplicateHighBits(upper_bound - step, bitness);
+    }
     return {lower_bound, upper_bound};
 }

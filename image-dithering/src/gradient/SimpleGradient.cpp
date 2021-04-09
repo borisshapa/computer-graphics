@@ -9,7 +9,7 @@ Image SimpleGradient::GetGreyGradient(size_t height, size_t width, size_t bitnes
 
     for (size_t row = 0; row < height; row++) {
         for (size_t col = 0; col < width; col++) {
-            data[row * width + col] = GetGreyValue(col, width, bitness);
+            data[row * width + col] = GetGreyValue(col, width, bitness, 0.5);
         }
     }
 

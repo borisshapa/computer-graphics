@@ -28,7 +28,7 @@ Image SeparableTransformation::EnlargeHorizontally(const Image& src, size_t new_
                     row,
                     src_data,
                     src_width,
-                    (static_cast<double>(col) / static_cast<double>(new_width)) * static_cast<double>(src_width)
+                    ((static_cast<double>(col) + 0.5) / static_cast<double>(new_width)) * static_cast<double>(src_width)
             );
         }
     }

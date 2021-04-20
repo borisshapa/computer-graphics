@@ -2,7 +2,7 @@
 // Created by borisshapa on 10.04.2021.
 //
 
-#include <complex>
+#include <cmath>
 #include "Lanczos3.h"
 
 Lanczos3::Lanczos3() : Kernel(-3.0, 3.0) {}

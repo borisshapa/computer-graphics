@@ -3,6 +3,7 @@
 //
 
 #include <valarray>
+#include <cmath>
 #include "BCSplines.h"
 
 BCSplines::BCSplines(double b, double c) : Kernel(-2.0, 2.0), b_(b), c_(c) {}

@@ -9,6 +9,7 @@
 #include "transformations/KernelTransformation.h"
 #include "kernels/Lanczos3.h"
 #include "kernels/BCSplines.h"
+#include <cstdlib>
 
 void CheckConversionCorrectness(const std::string &input, const char *endptr) {
     if (input.c_str() == endptr

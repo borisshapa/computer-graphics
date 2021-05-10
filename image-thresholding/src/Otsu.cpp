@@ -5,6 +5,7 @@
 #include <vector>
 #include <tuple>
 #include <algorithm>
+#include <iostream>
 #include "Otsu.h"
 
 void Otsu::brute_force(
@@ -49,6 +50,7 @@ Image Otsu::Segment(const size_t class_count) {
                 (static_cast<double>(input_image_.GetMaxChannelValue()) / static_cast<double>(class_count - 1))
                 * static_cast<double>(class_ind)
         );
+        std::cout << thresholds[class_ind + 1] << ' ';
         std::fill(
                 color_mapping.begin() + static_cast<int>(thresholds[class_ind]) + 1,
                 color_mapping.begin() + static_cast<int>(thresholds[class_ind + 1]) + 1,

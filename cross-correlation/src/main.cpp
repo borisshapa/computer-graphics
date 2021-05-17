@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
                 }
             }
         }
-        std::cout << "Maximum coordinates: (" << x << ", " << y << ") (The top left corner is (0, 0))";
+        std::cout << "Maximum coordinates: (" << x << ", " << y << ") (The top left corner is (0, 0))\n";
         pnm::write(output_image, output_file_name);
     } catch (const std::bad_alloc &e) {
         std::cerr << "Allocation failed: " << e.what() << '\n';

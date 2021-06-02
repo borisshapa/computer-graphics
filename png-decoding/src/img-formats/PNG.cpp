@@ -9,6 +9,7 @@
 #include <iostream>
 #include <cstring>
 #include <vector>
+#include <cmath>
 
 namespace png {
     struct ChunkHeader {

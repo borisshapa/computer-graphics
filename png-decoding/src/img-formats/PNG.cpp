@@ -9,13 +9,21 @@
 #include <iostream>
 #include <cstring>
 #include <vector>
-#include <netinet/in.h>
 
 namespace png {
     struct ChunkHeader {
         uint32_t size;
         char type[4];
     } __attribute__((__packed__));
+
+    uint32_t ntohl(uint32_t x) {
+        auto *bytes = reinterpret_cast<uint8_t *>(&x);
+        uint32_t result = 0;
+        for (int i = 0; i < 4; i++) {
+            result |= (bytes[i] << ((3 - i) * 8));
+        }
+        return result;
+    }
 
     struct IHDRChunk {
         uint32_t width;

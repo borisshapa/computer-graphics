@@ -61,7 +61,7 @@ namespace png {
             throw std::runtime_error("Invalid format of the png file header");
         }
 
-        uint32_t width, height, bpp;
+        uint32_t width, height, channel_count;
 
         ChunkHeader chunk_header = ReadChunkHeader(in);
         if (std::strncmp(chunk_header.type, "IHDR", 4) != 0) {
@@ -74,10 +74,10 @@ namespace png {
         height = ntohl(ihdr.height);
         switch (ihdr.color_type) {
             case 0:
-                bpp = 1;
+                channel_count = 1;
                 break;
             case 2:
-                bpp = 3;
+                channel_count = 3;
                 break;
             default:
                 throw std::runtime_error("Only single-channel and three-channel images are supported");
@@ -105,7 +105,7 @@ namespace png {
             in.seekg(4, std::ios::cur);
         }
 
-        size_t row_size = bpp * width + 1;
+        size_t row_size = channel_count * width + 1;
         std::vector<uint8_t> result(row_size * height);
         z_stream stream;
         stream.zalloc = nullptr;
@@ -126,21 +126,21 @@ namespace png {
             throw std::runtime_error("Inflate error");
         }
 
-        auto *image_data = new uint8_t[height * width * bpp];
-        size_t image_data_row_size = width * bpp;
+        auto *image_data = new uint8_t[height * width * channel_count];
+        size_t image_data_row_size = width * channel_count;
 
         for (size_t row = 0; row < height; row++) {
             uint8_t filter = result[row * row_size];
             std::cout << (int)filter << '\n';
             switch (filter) {
                 case 1:
-                    for (size_t i = 0; i < bpp; i++) {
+                    for (size_t i = 0; i < channel_count; i++) {
                         image_data[row * image_data_row_size + i] = result[row * row_size + i + 1];
                     }
-                    for (size_t i = bpp; i < image_data_row_size; i++) {
+                    for (size_t i = channel_count; i < image_data_row_size; i++) {
                         image_data[row * image_data_row_size + i] =
                                 result[row * row_size + i + 1]
-                                + image_data[row * image_data_row_size + i - bpp];
+                                + image_data[row * image_data_row_size + i - channel_count];
                     }
                     break;
                 case 2:
@@ -158,25 +158,25 @@ namespace png {
                     break;
                 case 3:
                     if (row == 0) {
-                        for (size_t i = 0; i < bpp; i++) {
+                        for (size_t i = 0; i < channel_count; i++) {
                             image_data[row * image_data_row_size + i] = result[row * row_size + i + 1];
                         }
-                        for (size_t i = bpp; i < image_data_row_size; i++) {
+                        for (size_t i = channel_count; i < image_data_row_size; i++) {
                             image_data[row * image_data_row_size + i] =
                                     result[row * row_size + i + 1]
-                                    + (image_data[row * image_data_row_size + i - bpp] >> 1);
+                                    + (image_data[row * image_data_row_size + i - channel_count] >> 1);
                         }
                     } else {
-                        for (size_t i = 0; i < bpp; i++) {
+                        for (size_t i = 0; i < channel_count; i++) {
                             image_data[row * image_data_row_size + i] =
                                     result[row * row_size + i + 1]
                                     + (image_data[(row - 1) * image_data_row_size + i] >> 1);
                         }
-                        for (size_t i = bpp; i < image_data_row_size; i++) {
+                        for (size_t i = channel_count; i < image_data_row_size; i++) {
                             image_data[row * image_data_row_size + i] =
                                     result[row * row_size + i + 1]
                                     + (
-                                            (image_data[row * image_data_row_size + i - bpp]
+                                            (image_data[row * image_data_row_size + i - channel_count]
                                              + image_data[(row - 1) * image_data_row_size + i]) >> 1
                                     );
                         }
@@ -184,16 +184,16 @@ namespace png {
                     break;
                 case 4:
                     if (row == 0) {
-                        for (size_t i = 0; i < bpp; i++) {
+                        for (size_t i = 0; i < channel_count; i++) {
                             image_data[row * image_data_row_size + i] = result[row * row_size + i + 1];
                         }
-                        for (size_t i = bpp; i < image_data_row_size; i++) {
+                        for (size_t i = channel_count; i < image_data_row_size; i++) {
                             image_data[row * image_data_row_size + i] =
                                     result[row * row_size + i + 1]
-                                    + PaethPredictor(image_data[row * image_data_row_size + i - bpp], 0, 0);
+                                    + PaethPredictor(image_data[row * image_data_row_size + i - channel_count], 0, 0);
                         }
                     } else {
-                        for (size_t i = 0; i < bpp; i++) {
+                        for (size_t i = 0; i < channel_count; i++) {
                             image_data[row * image_data_row_size + i] =
                                     result[row * row_size + i + 1]
                                     + PaethPredictor(
@@ -202,13 +202,13 @@ namespace png {
                                             0
                                     );
                         }
-                        for (size_t i = bpp; i < image_data_row_size; i++) {
+                        for (size_t i = channel_count; i < image_data_row_size; i++) {
                             image_data[row * image_data_row_size + i] =
                                     static_cast<int>(result[row * row_size + i + 1])
                                     + PaethPredictor(
-                                            image_data[row * image_data_row_size + i - bpp],
+                                            image_data[row * image_data_row_size + i - channel_count],
                                             image_data[(row - 1) * image_data_row_size + i],
-                                            image_data[(row - 1) * image_data_row_size + i - bpp]
+                                            image_data[(row - 1) * image_data_row_size + i - channel_count]
                                     );
                         }
                     }
@@ -219,6 +219,6 @@ namespace png {
                     break;
             }
         }
-        return Image(width, height, bpp, 255, image_data);
+        return Image(width, height, channel_count, 255, image_data);
     }
 }

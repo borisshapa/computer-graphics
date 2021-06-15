@@ -18,12 +18,6 @@ namespace jpeg {
         std::cout << str << "\n";
     }
 
-    void CheckIfSizeIsZero(int size) {
-        if (size != 0) {
-            throw std::runtime_error("Wrong segment size");
-        }
-    }
-
     int ReadMarker(std::istream &in) {
         int ff_byte = in.get();
         if (ff_byte != BYTE_FF) {
@@ -115,11 +109,9 @@ namespace jpeg {
         return Read2Bytes(in);
     }
 
-    DCACHuffmanTables ReadHuffmanTable(std::istream &in) {
+    void ReadHuffmanTable(std::istream &in, DCACHuffmanTables& huffman_tables) {
         uint16_t size = Read2Bytes(in);
         size -= 2;
-
-        DCACHuffmanTables huffman_tables{};
 
         while (size > 0) {
             int table_info = in.get();
@@ -153,8 +145,6 @@ namespace jpeg {
             }
             size -= 17 + total_symbol_count;
         }
-        CheckIfSizeIsZero(size);
-        return huffman_tables;
     }
 
     void ReadStartOfScan(std::istream &in) {
@@ -279,7 +269,6 @@ namespace jpeg {
         int prev_dc = 0;
 
         for (int i = 0; i < mcu_height * mcu_width; i++) {
-            std::cout << prev_dc << ' ';
             if (restart_interval != 0 && i % restart_interval == 0) {
                 prev_dc = 0;
                 b.Align();
@@ -375,8 +364,8 @@ namespace jpeg {
                             double cv = (mcu_row == 0) ? (1 / std::sqrt(2)) : 1.0;
                             double cu = (mcu_col == 0) ? (1 / std::sqrt(2)) : 1.0;
                             sum += cv * cu * mcu[i][mcu_row * 8 + mcu_col]
-                                   * std::cos((2 * static_cast<double>(ii) + 1) * static_cast<double>(jj) * M_PI / 16)
-                                   * std::cos((2 * static_cast<double>(jj) + 1) * static_cast<double>(ii) * M_PI / 16);
+                                   * std::cos((2 * static_cast<double>(ii) + 1) * static_cast<double>(mcu_row) * M_PI / 16)
+                                   * std::cos((2 * static_cast<double>(jj) + 1) * static_cast<double>(mcu_col) * M_PI / 16);
                         }
                     }
                     sum /= 4;
@@ -423,7 +412,7 @@ namespace jpeg {
                 std::tie(height, width) = ReadStartOfFrame(in);
             } else if (marker_type == DHT) {
                 Log("DHT");
-                huffman_tables = ReadHuffmanTable(in);
+                ReadHuffmanTable(in, huffman_tables);
 //                for (auto &huffman_table : huffman_tables) {
 //                    for (int j = 0; j < huffman_table.size(); j++) {
 //                        std::cout << j << " " << (int) huffman_table[j].first << "    ";
@@ -477,7 +466,15 @@ namespace jpeg {
 
         std::vector<std::array<int, 64>> mcu = GetMCU(huffman_tables, huffman_data, height, width, restart_interval);
         Dequantize(height, width, quantization_table, mcu);
+
         InverseDCT(height, width, mcu);
+
+//        for (size_t j = 0; j < 10; j++) {
+//            for (size_t i = 0; i < 64; i++) {
+//                std::cout << mcu[j][i] << ' ';
+//            }
+//            std::cout << '\n';
+//        }
 
         int mcu_width = (width + 7) / 8;
         auto *image_data = new uint8_t[height * width];
@@ -491,7 +488,7 @@ namespace jpeg {
                 int mcu_index = mcu_row * mcu_width + mcu_col;
                 int pixel_index = pixel_row * 8 + pixel_col;
 
-                image_data[i * width + j] = mcu[mcu_index][pixel_index];
+                image_data[i * width + j] = mcu[mcu_index][pixel_index] + 128;
             }
         }
 
